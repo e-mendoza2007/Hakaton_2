@@ -12,7 +12,7 @@ import { SORT_OPTIONS } from '../utils/constants';
 const DEFAULT_SIZE = 20;
 
 export function Tropels() {
-  const { filters, setFilter } = useUrlFilters({
+  const { filters, setFilter, setFilters } = useUrlFilters({
     page: '0',
     species: undefined,
     vitalState: undefined,
@@ -78,8 +78,7 @@ export function Tropels() {
   useEffect(() => { load(); }, [load]);
 
   const handleFilterChange = (key: string, value: string) => {
-    setFilter(key, value === '' ? undefined : value);
-    setFilter('page', '0');
+    setFilters({ [key]: value === '' ? undefined : value, page: '0' });
   };
 
   return (
