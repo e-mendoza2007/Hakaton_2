@@ -5,8 +5,8 @@ Consola operativa para la gestión de Tropeles, construida con React + TypeScrip
 ## Integrantes
 
 - Jose Manuel Timana Carmona
-- [Nombre del integrante 2]
-- [Nombre del integrante 3]
+- Guerrero Cedron, Antonio Jorge
+- Mendoza Aguilar, Ernesto Yen
 
 ## Instalación
 
