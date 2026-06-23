@@ -18,5 +18,5 @@ export const signalService = {
     api.get<SignalDetailDTO>(`/signals/${id}`),
 
   updateStatus: (id: string, status: 'PROCESANDO' | 'ATENDIDA') =>
-    api.patch(`/signals/${id}/status`, { status }),
+    api.patch<SignalDetailDTO>(`/signals/${id}/status`, { status }),
 };

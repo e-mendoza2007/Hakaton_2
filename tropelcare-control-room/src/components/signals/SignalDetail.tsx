@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useRef } from 'react';
 import type { SignalDetailDTO, SignalStatus } from '../../types';
 import { signalService } from '../../services/signalService';
 import { Modal } from '../common/Modal';
@@ -21,6 +21,7 @@ export function SignalDetail({ signalId, open, onClose, onStatusChange }: Signal
   const [updating, setUpdating] = useState(false);
   const [updateError, setUpdateError] = useState<string | null>(null);
   const [successMsg, setSuccessMsg] = useState<string | null>(null);
+  const lastRequestedStatusRef = useRef<'PROCESANDO' | 'ATENDIDA' | null>(null);
 
   const load = () => {
     setLoading(true);
@@ -39,8 +40,15 @@ export function SignalDetail({ signalId, open, onClose, onStatusChange }: Signal
     }
   }, [signalId, open]);
 
+  useEffect(() => {
+    if (!successMsg) return;
+    const t = setTimeout(() => setSuccessMsg(null), 2000);
+    return () => clearTimeout(t);
+  }, [successMsg]);
+
   const handleStatusUpdate = async (newStatus: 'PROCESANDO' | 'ATENDIDA') => {
     if (!data) return;
+    lastRequestedStatusRef.current = newStatus;
     setUpdating(true);
     setUpdateError(null);
     setSuccessMsg(null);
@@ -49,8 +57,8 @@ export function SignalDetail({ signalId, open, onClose, onStatusChange }: Signal
       setData({ ...data, status: newStatus });
       setSuccessMsg(`Señal marcada como ${newStatus}`);
       onStatusChange?.(signalId, newStatus);
-    } catch {
-      setUpdateError('Error al actualizar el estado');
+    } catch (err: any) {
+      setUpdateError(err?.response?.data?.message ?? 'Error al actualizar el estado');
     } finally {
       setUpdating(false);
     }
@@ -116,7 +124,14 @@ export function SignalDetail({ signalId, open, onClose, onStatusChange }: Signal
           )}
 
           {updateError && (
-            <ErrorMessage message={updateError} />
+            <ErrorMessage
+              message={updateError}
+              onRetry={() => {
+                if (lastRequestedStatusRef.current) {
+                  handleStatusUpdate(lastRequestedStatusRef.current);
+                }
+              }}
+            />
           )}
 
           {nextStatus && (

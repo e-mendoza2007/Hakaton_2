@@ -24,9 +24,8 @@ export function Sectors() {
   useEffect(() => { load(); }, []);
 
   const handleNavigate = useCallback((id: string) => {
-    const vt = document.startViewTransition;
-    if (vt) {
-      vt(() => navigate(`/sectors/${id}/story`));
+    if ('startViewTransition' in document) {
+      (document as any).startViewTransition(() => navigate(`/sectors/${id}/story`));
     } else {
       navigate(`/sectors/${id}/story`);
     }

@@ -1,0 +1,270 @@
+{
+  "info": {
+    "name": "TropelCare Control Room",
+    "description": "Colección para probar la API de TropelCare. Establecé las variables de colección:\n\n- `base_url`: URL base de la API (ej: https://backend.example.com/api/v1)\n- `token`: se setea automáticamente al ejecutar Login",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "variable": [
+    {
+      "key": "base_url",
+      "value": "https://hackaton-20261-front-587720740455.us-east1.run.app/api/v1"
+    },
+    {
+      "key": "token",
+      "value": ""
+    },
+    {
+      "key": "cursor",
+      "value": ""
+    }
+  ],
+  "item": [
+    {
+      "name": "🟢 CP1 - Auth",
+      "item": [
+        {
+          "name": "Login (obtener JWT)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "if (pm.response.code === 200) {",
+                  "    var json = pm.response.json();",
+                  "    pm.collectionVariables.set('token', json.token);",
+                  "}"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"teamCode\": \"TEAM-0XX\",\n  \"email\": \"operator@tuckersoft.com\",\n  \"password\": \"password-del-equipo\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/auth/login",
+              "host": ["{{base_url}}"],
+              "path": ["auth", "login"]
+            }
+          }
+        },
+        {
+          "name": "Me - Restaurar sesión (CP1)",
+          "request": {
+            "method": "GET",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{token}}" }
+            ],
+            "url": {
+              "raw": "{{base_url}}/auth/me",
+              "host": ["{{base_url}}"],
+              "path": ["auth", "me"]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "🟢 CP1 - Dashboard",
+      "item": [
+        {
+          "name": "Summary (CP1)",
+          "request": {
+            "method": "GET",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{token}}" }
+            ],
+            "url": {
+              "raw": "{{base_url}}/dashboard/summary",
+              "host": ["{{base_url}}"],
+              "path": ["dashboard", "summary"]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "🟢 CP2 - Tropeles",
+      "item": [
+        {
+          "name": "Listar (CP2)",
+          "request": {
+            "method": "GET",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{token}}" }
+            ],
+            "url": {
+              "raw": "{{base_url}}/tropels?page=0&size=20&sort=updatedAt,desc",
+              "host": ["{{base_url}}"],
+              "path": ["tropels"],
+              "query": [
+                { "key": "page", "value": "0" },
+                { "key": "size", "value": "20" },
+                { "key": "sort", "value": "updatedAt,desc" }
+              ]
+            }
+          }
+        },
+        {
+          "name": "Listar con filtros (CP2)",
+          "request": {
+            "method": "GET",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{token}}" }
+            ],
+            "url": {
+              "raw": "{{base_url}}/tropels?page=0&size=10&species=FLUFFY&vitalState=CRITICO&sort=chaosIndex,desc",
+              "host": ["{{base_url}}"],
+              "path": ["tropels"],
+              "query": [
+                { "key": "page", "value": "0" },
+                { "key": "size", "value": "10" },
+                { "key": "species", "value": "FLUFFY" },
+                { "key": "vitalState", "value": "CRITICO" },
+                { "key": "sort", "value": "chaosIndex,desc" }
+              ]
+            }
+          }
+        },
+        {
+          "name": "Detalle de tropel (CP2)",
+          "request": {
+            "method": "GET",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{token}}" }
+            ],
+            "url": {
+              "raw": "{{base_url}}/tropels/1",
+              "host": ["{{base_url}}"],
+              "path": ["tropels", ":id"],
+              "variable": [
+                { "key": "id", "value": "1", "description": "ID del tropel" }
+              ]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "🟢 CP3+CP4 - Señales",
+      "item": [
+        {
+          "name": "Feed inicial (CP3)",
+          "request": {
+            "method": "GET",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{token}}" }
+            ],
+            "url": {
+              "raw": "{{base_url}}/signals/feed?limit=15",
+              "host": ["{{base_url}}"],
+              "path": ["signals", "feed"],
+              "query": [
+                { "key": "limit", "value": "15" }
+              ]
+            }
+          }
+        },
+        {
+          "name": "Feed con cursor (CP3)",
+          "request": {
+            "method": "GET",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{token}}" }
+            ],
+            "url": {
+              "raw": "{{base_url}}/signals/feed?cursor={{cursor}}&limit=15",
+              "host": ["{{base_url}}"],
+              "path": ["signals", "feed"],
+              "query": [
+                { "key": "cursor", "value": "{{cursor}}" },
+                { "key": "limit", "value": "15" }
+              ]
+            }
+          }
+        },
+        {
+          "name": "Detalle de señal (CP4)",
+          "request": {
+            "method": "GET",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{token}}" }
+            ],
+            "url": {
+              "raw": "{{base_url}}/signals/1",
+              "host": ["{{base_url}}"],
+              "path": ["signals", ":id"],
+              "variable": [
+                { "key": "id", "value": "1", "description": "ID de la señal" }
+              ]
+            }
+          }
+        },
+        {
+          "name": "Actualizar estado (CP4)",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{token}}" },
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"status\": \"ATENDIDA\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/signals/1/status",
+              "host": ["{{base_url}}"],
+              "path": ["signals", ":id", "status"],
+              "variable": [
+                { "key": "id", "value": "1", "description": "ID de la señal" }
+              ]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "🟢 CP5 - Sectores",
+      "item": [
+        {
+          "name": "Listar sectores (CP5)",
+          "request": {
+            "method": "GET",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{token}}" }
+            ],
+            "url": {
+              "raw": "{{base_url}}/sectors",
+              "host": ["{{base_url}}"],
+              "path": ["sectors"]
+            }
+          }
+        },
+        {
+          "name": "Story del sector (CP5)",
+          "request": {
+            "method": "GET",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{token}}" }
+            ],
+            "url": {
+              "raw": "{{base_url}}/sectors/1/story",
+              "host": ["{{base_url}}"],
+              "path": ["sectors", ":id", "story"],
+              "variable": [
+                { "key": "id", "value": "1", "description": "ID del sector" }
+              ]
+            }
+          }
+        }
+      ]
+    }
+  ]
+}

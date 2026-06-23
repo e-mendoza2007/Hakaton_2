@@ -17,6 +17,7 @@ interface SectorStoryProps {
 export function SectorStoryView({ sector, stages, loading, error, onRetry, onBack }: SectorStoryProps) {
   const [activeIndex, setActiveIndex] = useState(0);
   const stageRefs = useRef<(HTMLElement | null)[]>([]);
+  const backRef = useRef<HTMLButtonElement | null>(null);
 
   const handleIntersection = useCallback((entries: IntersectionObserverEntry[]) => {
     const visible = entries
@@ -47,6 +48,10 @@ export function SectorStoryView({ sector, stages, loading, error, onRetry, onBac
     return () => observer.disconnect();
   }, [handleIntersection, stages]);
 
+  useEffect(() => {
+    backRef.current?.focus();
+  }, []);
+
   const scrollToStage = (index: number) => {
     const el = stageRefs.current[index];
     el?.scrollIntoView({ behavior: 'smooth' });
@@ -57,6 +62,14 @@ export function SectorStoryView({ sector, stages, loading, error, onRetry, onBac
     if (e.key === 'Enter' || e.key === ' ') {
       e.preventDefault();
       scrollToStage(index);
+    } else if (e.key === 'ArrowRight' || e.key === 'ArrowDown') {
+      e.preventDefault();
+      const next = Math.min(stages.length - 1, index + 1);
+      scrollToStage(next);
+    } else if (e.key === 'ArrowLeft' || e.key === 'ArrowUp') {
+      e.preventDefault();
+      const prev = Math.max(0, index - 1);
+      scrollToStage(prev);
     }
   };
 
@@ -69,11 +82,16 @@ export function SectorStoryView({ sector, stages, loading, error, onRetry, onBac
     <div className="space-y-6">
       <div className="flex items-center gap-4">
         <button
+          ref={backRef}
           onClick={onBack}
           className="text-sm text-cyan-400 hover:underline"
         >
           &larr; Volver a sectores
         </button>
+      </div>
+
+      <div aria-live="polite" className="sr-only">
+        {currentStage ? `Etapa ${activeIndex + 1} de ${stages.length}: ${currentStage.title}` : ''}
       </div>
 
       {/* Sector summary */}
