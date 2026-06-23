@@ -1,6 +1,7 @@
 import { useEffect, useState, useCallback, useRef } from 'react';
-import type { TropelDTO, TropelSort, Species, VitalState } from '../types';
+import type { TropelDTO, TropelSort, Species, VitalState, SectorDTO } from '../types';
 import { tropelService } from '../services/tropelService';
+import { sectorService } from '../services/sectorService';
 import { useUrlFilters } from '../hooks/useUrlFilters';
 import { TropelFilters } from '../components/tropels/TropelFilters';
 import { TropelList } from '../components/tropels/TropelList';
@@ -15,6 +16,7 @@ export function Tropels() {
     page: '0',
     species: undefined,
     vitalState: undefined,
+    sectorId: undefined,
     q: undefined,
     sort: 'updatedAt,desc',
   });
@@ -22,13 +24,21 @@ export function Tropels() {
   const page = parseInt(filters.page ?? '0', 10);
   const species = filters.species as Species | undefined;
   const vitalState = filters.vitalState as VitalState | undefined;
+  const sectorId = filters.sectorId;
   const q = filters.q;
   const sort = (filters.sort ?? 'updatedAt,desc') as TropelSort;
 
   const [data, setData] = useState<{ items: TropelDTO[]; totalPages: number; totalElements: number } | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [sectors, setSectors] = useState<SectorDTO[]>([]);
   const requestIdRef = useRef(0);
+
+  useEffect(() => {
+    sectorService.list()
+      .then((res) => setSectors(res.data.items))
+      .catch(() => {});
+  }, []);
 
   const load = useCallback(() => {
     const reqId = ++requestIdRef.current;
@@ -40,6 +50,7 @@ export function Tropels() {
       size: DEFAULT_SIZE,
       species,
       vitalState,
+      sectorId: sectorId || undefined,
       q: q || undefined,
       sort,
     })
@@ -62,7 +73,7 @@ export function Tropels() {
           setLoading(false);
         }
       });
-  }, [page, species, vitalState, q, sort]);
+  }, [page, species, vitalState, sectorId, q, sort]);
 
   useEffect(() => { load(); }, [load]);
 
@@ -89,9 +100,12 @@ export function Tropels() {
       <TropelFilters
         species={species}
         vitalState={vitalState}
+        sectorId={sectorId}
         q={q}
+        sectors={sectors}
         onSpeciesChange={(v) => handleFilterChange('species', v)}
         onVitalStateChange={(v) => handleFilterChange('vitalState', v)}
+        onSectorIdChange={(v) => handleFilterChange('sectorId', v)}
         onQChange={(v) => handleFilterChange('q', v)}
       />
 

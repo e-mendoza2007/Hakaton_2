@@ -32,12 +32,11 @@ export function Signals() {
   const [pageError, setPageError] = useState<string | null>(null);
   const [selectedId, setSelectedId] = useState<string | null>(null);
 
-  const staleRef = useRef(false);
+  const initialReqId = useRef(0);
+  const moreReqId = useRef(0);
 
   const loadInitial = useCallback(() => {
-    staleRef.current = true;
-    const currentStale = Symbol();
-    const stale = currentStale;
+    const reqId = ++initialReqId.current;
     setLoading(true);
     setInitialLoading(true);
     setError(null);
@@ -52,19 +51,17 @@ export function Signals() {
       q: q || undefined,
     })
       .then((res) => {
-        if (stale !== currentStale) return;
+        if (reqId !== initialReqId.current) return;
         setItems(res.data.items);
         setCursor(res.data.nextCursor);
         setHasMore(res.data.hasMore);
-        staleRef.current = false;
       })
       .catch(() => {
-        if (stale !== currentStale) return;
+        if (reqId !== initialReqId.current) return;
         setError('Error al cargar señales');
-        staleRef.current = false;
       })
       .finally(() => {
-        if (stale !== currentStale) return;
+        if (reqId !== initialReqId.current) return;
         setLoading(false);
         setInitialLoading(false);
       });
@@ -73,11 +70,10 @@ export function Signals() {
   useEffect(() => { loadInitial(); }, [loadInitial]);
 
   const loadMore = useCallback(() => {
-    if (loading || !hasMore || staleRef.current) return;
+    const reqId = ++moreReqId.current;
+    if (loading || !hasMore) return;
     setPageError(null);
     setLoading(true);
-    const currentStale = Symbol();
-    const stale = currentStale;
 
     signalService.feed({
       cursor,
@@ -88,7 +84,7 @@ export function Signals() {
       q: q || undefined,
     })
       .then((res) => {
-        if (stale !== currentStale) return;
+        if (reqId !== moreReqId.current) return;
         setItems((prev) => {
           const existingIds = new Set(prev.map((i) => i.id));
           const newItems = res.data.items.filter((i) => !existingIds.has(i.id));
@@ -98,11 +94,11 @@ export function Signals() {
         setHasMore(res.data.hasMore);
       })
       .catch(() => {
-        if (stale !== currentStale) return;
+        if (reqId !== moreReqId.current) return;
         setPageError('Error al cargar más señales');
       })
       .finally(() => {
-        if (stale !== currentStale) return;
+        if (reqId !== moreReqId.current) return;
         setLoading(false);
       });
   }, [cursor, loading, hasMore, signalType, severity, status, q]);
@@ -114,6 +110,8 @@ export function Signals() {
 
   const handleFilterChange = (key: string, value: string) => {
     setFilter(key, value === '' ? undefined : value);
+    ++initialReqId.current;
+    ++moreReqId.current;
   };
 
   const handleStatusChange = useCallback((id: string, newStatus: SignalStatus) => {

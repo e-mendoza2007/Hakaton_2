@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import type { SectorDTO } from '../types';
 import { sectorService } from '../services/sectorService';
@@ -23,6 +23,15 @@ export function Sectors() {
 
   useEffect(() => { load(); }, []);
 
+  const handleNavigate = useCallback((id: string) => {
+    const vt = document.startViewTransition;
+    if (vt) {
+      vt(() => navigate(`/sectors/${id}/story`));
+    } else {
+      navigate(`/sectors/${id}/story`);
+    }
+  }, [navigate]);
+
   if (loading) return <Spinner />;
   if (error) return <ErrorMessage message={error} onRetry={load} />;
 
@@ -34,7 +43,7 @@ export function Sectors() {
           <Card
             key={sector.id}
             className="cursor-pointer hover:border-cyan-600 transition-colors"
-            onClick={() => navigate(`/sectors/${sector.id}/story`)}
+            onClick={() => handleNavigate(sector.id)}
           >
             <h3 className="font-semibold text-lg">{sector.name}</h3>
             <p className="text-sm text-gray-400">{sector.sectorCode}</p>

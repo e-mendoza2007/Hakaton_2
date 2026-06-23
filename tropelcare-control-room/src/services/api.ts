@@ -1,4 +1,5 @@
 import axios from 'axios';
+import type { ApiError } from '../types';
 
 const api = axios.create({
   baseURL: import.meta.env.VITE_API_BASE_URL,
@@ -20,6 +21,10 @@ api.interceptors.response.use(
       localStorage.removeItem('token');
       localStorage.removeItem('user');
       window.location.href = '/login';
+    }
+    const apiError = error.response?.data as ApiError | undefined;
+    if (apiError?.message) {
+      error.message = apiError.message;
     }
     return Promise.reject(error);
   }
